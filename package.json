@@ -1,0 +1,13 @@
+{
+  "name": "ripple64",
+  "private": true,
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev:server": "npm -w server run dev",
+    "dev:web": "npm -w web run dev --",
+    "build": "npm -w server run build && npm -w web run build"
+  }
+}
