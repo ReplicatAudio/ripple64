@@ -25,20 +25,21 @@ Server data is read relative to the server working directory (`server/users.json
 
 ## API
 
-All requests require the `x-key` header. Without a valid key: `401`.
+All requests require the `x-key` header. Without a valid key: `401`. The API
+is mounted under `/api`.
 
 Write requests (upload/delete) require a key belonging to the username in the
 path, otherwise `403`. Reads (download/list/users) accept any valid key.
 
 | Method | Path                | Body                     | Response                          |
 | ------ | ------------------- | ------------------------ | --------------------------------- |
-| GET    | `/`                 | —                        | `[{ username, msg }]`              |
-| GET    | `/me`               | —                        | `{ username }` for the key        |
-| POST   | `/register`         | `{ "username" }`          | `{ username, key }` (register key)|
-| GET    | `/:username`        | —                        | `{ total, files: [{ id, size }] }`|
-| GET    | `/:username/:id`    | —                        | raw file, `Content-Type` sniffed  |
-| POST   | `/:username/:id`    | raw binary               | `{ id, size }`                    |
-| DELETE | `/:username/:id`    | —                        | `204`                             |
+| GET    | `/api`               | —                        | `[{ username, msg }]`              |
+| GET    | `/api/me`            | —                        | `{ username }` for the key        |
+| POST   | `/api/register`      | `{ "username" }`          | `{ username, key }` (register key)|
+| GET    | `/api/:username`     | —                        | `{ total, files: [{ id, size }] }`|
+| GET    | `/api/:username/:id` | —                        | raw file, `Content-Type` sniffed  |
+| POST   | `/api/:username/:id` | raw binary               | `{ id, size }`                    |
+| DELETE | `/api/:username/:id` | —                        | `204`                             |
 
 `total` and `size` are in kilobytes (rounded).
 
@@ -50,60 +51,60 @@ Examples below assume the server at `ripple.n0fa.de`, a user key of
 List users and their messages:
 
 ```sh
-curl -H 'x-key: alicekey' https://ripple.n0fa.de/
+curl -H 'x-key: alicekey' https://ripple.n0fa.de/api
 ```
 
 Who a key belongs to:
 
 ```sh
-curl -H 'x-key: alicekey' https://ripple.n0fa.de/me
+curl -H 'x-key: alicekey' https://ripple.n0fa.de/api/me
 ```
 
 Register a new user (register key):
 
 ```sh
 curl -X POST -H 'x-key: regkey' -H 'content-type: application/json' \
-  -d '{"username":"carol"}' https://ripple.n0fa.de/register
+  -d '{"username":"carol"}' https://ripple.n0fa.de/api/register
 ```
 
 List a user's files:
 
 ```sh
-curl -H 'x-key: alicekey' https://ripple.n0fa.de/alice
+curl -H 'x-key: alicekey' https://ripple.n0fa.de/api/alice
 ```
 
 Download a file:
 
 ```sh
-curl -H 'x-key: alicekey' -o kick.wav https://ripple.n0fa.de/alice/kick
+curl -H 'x-key: alicekey' -o kick.wav https://ripple.n0fa.de/api/alice/kick
 ```
 
 Upload a file (raw body; only your own user):
 
 ```sh
 curl -X POST -H 'x-key: alicekey' -H 'content-type: application/octet-stream' \
-  --data-binary @kick.wav https://ripple.n0fa.de/alice/kick
+  --data-binary @kick.wav https://ripple.n0fa.de/api/alice/kick
 ```
 
 Delete a file (only your own user):
 
 ```sh
-curl -X DELETE -H 'x-key: alicekey' https://ripple.n0fa.de/alice/kick
+curl -X DELETE -H 'x-key: alicekey' https://ripple.n0fa.de/api/alice/kick
 ```
 
 Set your message (upload to `msg.md`; max 128 chars):
 
 ```sh
 curl -X POST -H 'x-key: alicekey' -H 'content-type: text/plain' \
-  --data 'hello *world*' https://ripple.n0fa.de/alice/msg.md
+  --data 'hello *world*' https://ripple.n0fa.de/api/alice/msg.md
 ```
 
 Limits per user: 64 MB total, 999 samples.
 
 ## Registration
 
-The key in `register.json` is not a user key. `GET /me` with it returns
-`{ "username": "register" }`. `POST /register` with that key and a JSON body
+The key in `register.json` is not a user key. `GET /api/me` with it returns
+`{ "username": "register" }`. `POST /api/register` with that key and a JSON body
 `{ "username" }` generates an 8-byte hex key, adds the user to `users.json`,
 and returns `{ username, key }`. Usernames must match `[A-Za-z0-9][A-Za-z0-9_-]{0,31}`,
 must not be `register`, and must not already exist.
@@ -112,7 +113,7 @@ must not be `register`, and must not already exist.
 
 Each user may set a short message (max 128 chars) stored at
 `storage/<username>/msg.md` and returned as `msg` in the user list. It is set
-by uploading to `/:username/msg.md` (only the owner; server rejects >128
+by uploading to `/api/:username/msg.md` (only the owner; server rejects >128
 chars). `msg.md` is excluded from the file list and stats.
 
 ## Frontend

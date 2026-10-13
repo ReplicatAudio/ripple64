@@ -17,7 +17,7 @@ function param(value: string | string[] | undefined): string {
 const app = express();
 app.use(express.raw({ type: () => true, limit: MAX_BYTES }));
 
-app.get('/', authenticate, (_req: Request, res: Response) => {
+app.get('/api', authenticate, (_req: Request, res: Response) => {
   res.json(
     Object.keys(loadUsers()).map((username) => ({
       username,
@@ -26,7 +26,7 @@ app.get('/', authenticate, (_req: Request, res: Response) => {
   );
 });
 
-app.get('/me', (req: Request, res: Response) => {
+app.get('/api/me', (req: Request, res: Response) => {
   const key = req.header('x-key');
   if (!key) {
     res.status(401).json({ error: 'missing key' });
@@ -45,7 +45,7 @@ app.get('/me', (req: Request, res: Response) => {
   res.json({ username: user });
 });
 
-app.post('/register', (req: Request, res: Response) => {
+app.post('/api/register', (req: Request, res: Response) => {
   const key = req.header('x-key') ?? '';
   const registerKey = loadRegisterKey();
   if (!registerKey || key !== registerKey) {
@@ -72,7 +72,7 @@ app.post('/register', (req: Request, res: Response) => {
   res.status(201).json({ username, key: newKey });
 });
 
-app.get('/:username', authenticate, (req: Request, res: Response) => {
+app.get('/api/:username', authenticate, (req: Request, res: Response) => {
   const username = param(req.params.username);
   if (!userExists(username)) {
     res.status(404).json({ error: 'unknown user' });
@@ -89,7 +89,7 @@ app.get('/:username', authenticate, (req: Request, res: Response) => {
   });
 });
 
-app.get('/:username/:id', authenticate, (req: Request, res: Response) => {
+app.get('/api/:username/:id', authenticate, (req: Request, res: Response) => {
   const username = param(req.params.username);
   const id = param(req.params.id);
   if (!userExists(username)) {
@@ -124,7 +124,7 @@ app.get('/:username/:id', authenticate, (req: Request, res: Response) => {
   createReadStream(full).pipe(res);
 });
 
-app.post('/:username/:id', authenticate, requireSelf, (req: Request, res: Response) => {
+app.post('/api/:username/:id', authenticate, requireSelf, (req: Request, res: Response) => {
   const username = param(req.params.username);
   const id = param(req.params.id);
   if (!validId(id)) {
@@ -158,7 +158,7 @@ app.post('/:username/:id', authenticate, requireSelf, (req: Request, res: Respon
   res.status(201).json({ id, size: data.length });
 });
 
-app.delete('/:username/:id', authenticate, requireSelf, (req: Request, res: Response) => {
+app.delete('/api/:username/:id', authenticate, requireSelf, (req: Request, res: Response) => {
   const username = param(req.params.username);
   const id = param(req.params.id);
   if (!validId(id)) {

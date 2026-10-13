@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  const API = (import.meta.env.VITE_API_URL as string | undefined) ?? '/api';
+  const API = '/api';
   const STORAGE_KEY = 'ripple64.key';
   const MAX_FILES = 999;
   const MAX_KB = 64 * 1024;
